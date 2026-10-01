@@ -1,0 +1,1 @@
+"""Paquete de clientes de APIs externas (OMDb, TVMaze)."""
