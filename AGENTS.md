@@ -1,16 +1,18 @@
 # AGENTS.md
 
-Educational Python 3.12 app ("Películas y Series") being refactored phase-by-phase from an intentionally-poor codebase, driven by an AI agent per `Docs/*.md` (Spanish) phase reports.
+Educational Python 3.12 app ("Películas y Series") being refactored phase-by-phase from an intentionally-poor codebase, driven by an AI agent per `docs/*.md` (Spanish) phase reports.
 
 ## State and ground truth
-- `Docs/*.md` (e.g. `Docs/20_resumen_fase5_hito3.md`) track what has been done and what is intentionally still wrong. Read the latest before editing.
-- `README.md` is STALE — it still describes the original pre-refactor project (wildcards, ~100 files, no tests). Trust the code and `Docs/`, not README prose.
-- Phases 1–5 are done. Fase 6 = testing (`Docs/21_resumen_fase6_hito1.md`, `Docs/22_resumen_fase6_hito2.md`, `Docs/23_resumen_fase6_hito3.md`): pytest infra + pure-logic + service unit tests (APIs mocked via `pytest-mock`) + API/integration + config + UI + e2e subprocess tests done. Coverage total ≈98% (target ≥80% met). `tests/conftest.py` has an autouse fixture that resets module-level service globals AND rebinds `ui.menu`'s references to them (reassignment via `limpiar_historial`/`importar_de_json` would otherwise break ordering). Known findings from Fase 6: fixed a latent `TypeError` in `config.validate_config` (non-numeric `timeout` → now `elif`); `main.py` is excluded from coverage (entry-point guard) but covered by subprocess e2e tests; `ui/menu.py` rests at ~94% (missing the `delay` body and the 1–11 dispatch `elif` branches in `menu_principal`).
+- `docs/*.md` (e.g. `docs/20_resumen_fase5_hito3.md`) track what has been done and what is intentionally still wrong. Read the latest before editing. NOTE: directory is lowercase `docs/` (Linux is case-sensitive).
+- `README.md` is STALE — it still describes the original pre-refactor project (wildcards, ~100 files, no tests). Trust the code and `docs/`, not README prose.
+- Phases 1–6 are done (169 tests, 98% coverage; target ≥80% met). `docs/21/22/23_resumen_fase6_hito*.md` cover the testing phase. `tests/conftest.py` has an autouse fixture that resets module-level service globals AND rebinds `ui.menu`'s references to them (reassignment via `limpiar_historial`/`importar_de_json` would otherwise break ordering).
+- Known remaining items (documented, out of scope): `main.py` excluded from coverage (only the `__main__` guard) but covered by subprocess e2e tests; `ui/menu.py` at ~94% (missing `delay` body and the 1–11 dispatch `elif` branches); `json5` in `requirements.txt` is a dead dependency; `user_manager.py` stores plaintext passwords; `*_manager.py` are dead code.
 
 ## Commands
 - Run: `python3 main.py` (interactive menu; OMDB lookups need `OMDB_API_KEY` in `.env`).
 - Tests: `source .venv/bin/activate && pytest -v` (or `.venv/bin/python -m pytest`). Deps live in the `.venv`; system python has none of them. Coverage: pytest-cov is on by default via `pytest.ini` `addopts`.
-- Verify non-test code the Docs-style way: `python3 -m py_compile <file>` or throwaway `python3 -c "..."` imports.
+- Mock gotcha: `api/omdb.py` and `api/tvmaze.py` do `from api.http_client import hacer_request`, so tests must patch the imported reference (`api.omdb.hacer_request`), NOT `api.http_client.hacer_request`.
+- Verify non-test code the docs-style way: `python3 -m py_compile <file>` or throwaway `python3 -c "..."` imports.
 - No linter, formatter, or pre-commit is configured.
 - `.venv/` and `tests/` exist; `*_manager.py` is still excluded from coverage in `.coveragerc` (dead code, imported nowhere).
 
